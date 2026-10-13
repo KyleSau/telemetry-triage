@@ -1,0 +1,16 @@
+# EXAMPLE manifest for a demo cluster (kind/minikube), not a production deployment.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: telemetry-triage-config
+  labels:
+    app.kubernetes.io/name: telemetry-triage
+data:
+  Bus__Kind: "inmemory"                  # "kafka" + Kafka__BootstrapServers to consume a real topic
+  Kafka__BootstrapServers: "kafka:9092"
+  Pipeline__Scenario: "correlated-fault" # replayed on startup; empty = consume continuously
+  Triage__Provider: "rules"              # "claude" requires the optional anthropic secret below
+  Claude__Model: "claude-opus-5-5"
+  Claude__Effort: "medium"
+  Observability__Exporter: "console"     # "otlp" + OTEL_EXPORTER_OTLP_ENDPOINT for a collector
+  Logging__Console__FormatterName: "json"

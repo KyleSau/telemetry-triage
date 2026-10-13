@@ -1,0 +1,67 @@
+# EXAMPLE manifest for a demo cluster (kind/minikube), not a production deployment.
+# One replica on purpose: the incident store is in-memory, so replicas would not share results.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telemetry-triage-api
+  labels:
+    app.kubernetes.io/name: telemetry-triage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: telemetry-triage
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: telemetry-triage
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: api
+          image: telemetry-triage-api:local   # docker build -t telemetry-triage-api:local . && kind load docker-image ...
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: telemetry-triage-config
+          env:
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: anthropic
+                  key: api-key
+                  optional: true
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp   # writable scratch space; the root filesystem is read-only
+      volumes:
+        - name: tmp
+          emptyDir: {}

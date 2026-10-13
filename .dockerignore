@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+.git/
+.github/
+tests/
+docs/
+deploy/
+*.md
+!runbooks/*.md

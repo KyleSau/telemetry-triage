@@ -1,0 +1,52 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Format check
+        run: dotnet format --verify-no-changes --no-restore
+
+      - name: Build (warnings as errors)
+        run: dotnet build --no-restore -c Release -warnaserror
+
+      - name: Test (offline; Kafka integration tests skip without a broker)
+        run: dotnet test --no-build -c Release --logger "trx;LogFileName=results.trx"
+
+      - name: Evals (offline, rule-based provider; non-zero exit on failure)
+        run: dotnet run --project src/TelemetryTriage.Cli -c Release --no-build -- evals
+
+  kafka-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Start single-node Kafka (same compose file as local dev)
+        run: docker compose up -d --wait kafka
+
+      - name: Kafka integration tests (end-to-end scenario + redelivery of unacked frames)
+        env:
+          KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+        run: dotnet test --filter "FullyQualifiedName~KafkaTests"
+
+      - name: Stop Kafka
+        if: always()
+        run: docker compose down
