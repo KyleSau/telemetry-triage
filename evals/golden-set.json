@@ -1,0 +1,45 @@
+{
+  "cases": [
+    { "scenario": "nominal", "expectIncidents": 0 },
+    {
+      "scenario": "spike", "expectIncidents": 1,
+      "detections": [ { "channel": "attitude_rate", "detectors": ["zscore", "rate"], "withinSamples": 1 } ],
+      "groupedChannels": ["attitude_rate"],
+      "minSeverity": "Low", "maxSeverity": "Low"
+    },
+    {
+      "scenario": "sensor-dropout", "expectIncidents": 1,
+      "detections": [ { "channel": "battery_temp", "detectors": ["missing"], "withinSamples": 5 } ],
+      "groupedChannels": ["battery_temp"],
+      "minSeverity": "Medium", "maxSeverity": "Medium"
+    },
+    {
+      "scenario": "stuck-value", "expectIncidents": 1,
+      "detections": [ { "channel": "tank_pressure", "detectors": ["stuck"], "withinSamples": 10 } ],
+      "groupedChannels": ["tank_pressure"],
+      "minSeverity": "Medium", "maxSeverity": "High"
+    },
+    {
+      "scenario": "drift", "expectIncidents": 1,
+      "detections": [ { "channel": "avionics_temp", "detectors": ["ewma-drift"], "withinSamples": 60 } ],
+      "groupedChannels": ["avionics_temp"],
+      "minSeverity": "Medium", "maxSeverity": "High"
+    },
+    {
+      "scenario": "correlated-fault", "expectIncidents": 1,
+      "detections": [
+        { "channel": "bus_voltage", "detectors": ["zscore", "rate", "ewma-drift"], "withinSamples": 3 },
+        { "channel": "link_snr", "detectors": ["zscore", "ewma-drift"], "withinSamples": 5 },
+        { "channel": "battery_temp", "detectors": ["zscore", "ewma-drift"], "withinSamples": 30 }
+      ],
+      "groupedChannels": ["bus_voltage", "battery_temp", "link_snr"],
+      "minSeverity": "High", "maxSeverity": "Critical"
+    }
+  ],
+  "severityOrder": [
+    { "higher": "correlated-fault", "lower": "stuck-value" },
+    { "higher": "correlated-fault", "lower": "drift" },
+    { "higher": "stuck-value", "lower": "spike" },
+    { "higher": "sensor-dropout", "lower": "spike" }
+  ]
+}

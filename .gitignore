@@ -1,0 +1,27 @@
+# Build output
+bin/
+obj/
+out/
+publish/
+artifacts/
+
+# Test results / coverage
+TestResults/
+*.trx
+coverage*.xml
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local secrets and run output
+.env
+*.local.json
+incidents*.json

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Domain logic only: generator, detectors, grouping, evidence, triage contracts, evals.
+       No Kafka/HTTP/LLM dependencies live here. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\runbooks\*.md" Link="runbooks\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\evals\golden-set.json" Link="evals\golden-set.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="TelemetryTriage.Tests" />
+  </ItemGroup>
+
+</Project>
