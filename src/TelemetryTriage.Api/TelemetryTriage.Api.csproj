@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\TelemetryTriage.Infrastructure\TelemetryTriage.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
